@@ -1,0 +1,37 @@
+const strings = {
+    appName: { EN: "krorderly", JA: "krorderly" },
+    toolsTitle: { EN: "Tools", JA: "ツール" },
+    itemLookupTitle: { EN: "Item Lookup", JA: "アイテム検索" },
+    listHelperTitle: { EN: "List Helper", JA: "リストヘルパー" },
+    languageTitle: { EN: "Language", JA: "言語" },
+    obtainedViaCrafting: { EN: "Obtained Via Crafting", JA: "クラフトで入手" },
+    obtainedFromSources: { EN: "Obtained From Sources", JA: "ドロップで入手" },
+    additionalDetails: { EN: "Additional Details", JA: "追加情報" },
+    weight: { EN: "Weight", JA: "重さ" },
+    stackSize: { EN: "Stack Size", JA: "スタックサイズ" },
+    durability: { EN: "Durability", JA: "耐久値" },
+    hp: { EN: "HP", JA: "HP" },
+    foodPoints: { EN: "Food", JA: "満腹度" },
+    waterPoints: { EN: "Water", JA: "水分" },
+    cooldown: { EN: "Cooldown", JA: "クールダウン" },
+    freshness: { EN: "Freshness", JA: "鮮度" },
+    defense: { EN: "Defense", JA: "防御力" },
+    magicDefense: { EN: "Magic Defense", JA: "魔法防御" },
+    attackPower: { EN: "Attack Power", JA: "攻撃力" },
+    breaking: { EN: "Breaking", JA: "破壊力" },
+    fuelDuration: { EN: "Fuel Duration", JA: "燃料時間" },
+    fertilizerValue: { EN: "Fertilizer Value", JA: "肥料効果値" },
+    tokenCost: { EN: "Token Cost", JA: "トークンコスト" },
+    observationPointCost: { EN: "Observation Point Cost", JA: "観測ポイントコスト" },
+    area: { EN: "Area", JA: "エリア" },
+    byproduct: { EN: "Byproduct", JA: "副産物" },
+    simulationRoom: { EN: "Simulation Room", JA: "シミュレーションルーム" },
+    allAreas: { EN: "All", JA: "すべて" },
+    qualityScore: { EN: "Quality Score", JA: "品質スコア" },
+    durabilityCost: { EN: "Durability Cost", JA: "耐久消費" },
+    inclusionCost: { EN: "Inclusion Cost", JA: "内容物消費" },
+};
+
+export const t = (key: keyof typeof strings, lang: 'EN' | 'JA'): string => {
+    return strings[key] ?.[lang] || key;
+};

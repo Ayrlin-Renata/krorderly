@@ -1,0 +1,25 @@
+{
+  "name": "krorderly",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "cleanup": "node ./cleanup.js src"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
+    "node": "^24.6.0",
+    "preact": "^10.27.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.2",
+    "glob": "^11.0.3",
+    "strip-comments": "^2.0.1",
+    "tailwindcss": "^4.1.12",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  }
+}
