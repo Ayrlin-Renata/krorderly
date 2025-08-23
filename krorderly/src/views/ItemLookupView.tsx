@@ -1,5 +1,4 @@
-import { h } from 'preact';
-import { useEffect, useState, useMemo } from 'preact/hooks';
+import { useEffect, useState, useMemo, useRef } from 'preact/hooks';
 import { getItems } from '../services/DataService';
 import type { ProcessedItem } from '../types/GameData';
 import { useLocalization } from '../contexts/LocalizationContext';
@@ -7,6 +6,7 @@ import { t } from '../utils/Localization';
 import { SearchBar } from '../components/shared/SearchBar';
 import { ItemCard } from '../components/ItemCard';
 import { ItemProfile } from '../components/ItemProfile';
+import { SearchKeywords } from '../components/shared/SearchKeywords';
 
 export function ItemLookupView() {
   const [items, setItems] = useState<Map<number, ProcessedItem>>(new Map());
@@ -14,6 +14,7 @@ export function ItemLookupView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItem, setSelectedItem] = useState<ProcessedItem | null>(null);
   const { language } = useLocalization();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const fetchItems = async () => {
       setIsLoading(true);
@@ -26,16 +27,38 @@ export function ItemLookupView() {
   const filteredItems = useMemo(() => {
     if (!searchQuery) return [];
     const itemsArray = Array.from(items.values());
-    const lowerCaseQuery = searchQuery.toLowerCase();
-    const results = itemsArray.filter(item => {
+    const lowerCaseQuery = searchQuery.toLowerCase().trim();
+    if (lowerCaseQuery.includes(':')) {
+      const [keyword, ...valueParts] = lowerCaseQuery.split(':');
+      const value = valueParts.join(':').trim();
+      if (!value) return [];
+      switch (keyword) {
+        case 'category':
+          return itemsArray.filter(item => {
+            const category = language === 'JA' ? item.category.ja : item.category.en;
+            return typeof category === 'string' && category.toLowerCase().includes(value);
+          }).slice(0, 30);
+        default:
+          return [];
+      }
+    }
+    const startsWithMatches: ProcessedItem[] = [];
+    const includesMatches: ProcessedItem[] = [];
+    for (const item of itemsArray) {
       const name = language === 'JA' ? item.name.ja : item.name.en;
-      return typeof name === 'string' && name.toLowerCase().includes(lowerCaseQuery);
-    });
-    return results.slice(0, 30);
+      if (typeof name === 'string') {
+        const lowerCaseName = name.toLowerCase();
+        if (lowerCaseName.startsWith(lowerCaseQuery)) {
+          startsWithMatches.push(item);
+        } else if (lowerCaseName.includes(lowerCaseQuery)) {
+          includesMatches.push(item);
+        }
+      }
+    }
+    return [...startsWithMatches, ...includesMatches].slice(0, 30);
   }, [items, searchQuery, language]);
   const handleItemSelect = (item: ProcessedItem) => {
     setSelectedItem(item);
-    
     const name = language === 'JA' ? item.name.ja : item.name.en;
     setSearchQuery(name);
   };
@@ -49,6 +72,14 @@ export function ItemLookupView() {
       setSelectedItem(null);
     }
   };
+  const handleKeywordClick = (keyword: string) => {
+    setSearchQuery(keyword);
+    if (selectedItem) {
+      setSelectedItem(null);
+    }
+    
+    searchInputRef.current?.focus();
+  };
   return (
     <div class="space-y-6">
       <h2 class="text-2xl font-semibold">{t('itemLookupTitle', language)}</h2>
@@ -58,10 +89,12 @@ export function ItemLookupView() {
       ) : (
         <div class="space-y-4">
           <SearchBar 
+            ref={searchInputRef}
             value={searchQuery}
             onInput={handleSearchInput}
-            placeholder={`Search for an item in ${language}...`}
+            placeholder={`Search by name or use a keyword...`}
           />
+          <SearchKeywords onKeywordClick={handleKeywordClick} />
           
           {selectedItem && (
              <div class="mt-6">

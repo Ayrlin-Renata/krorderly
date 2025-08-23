@@ -1,13 +1,13 @@
 import { DATA_BASE_URL } from '../Config';
 import type {
-  HistoricalDropTablesData,
-  HistoricalItemsData,
-  HistoricalRecipesData,
-  ProcessedDropSource,
-  ProcessedItem,
-  ProcessedMaterial,
-  ProcessedRecipe,
-  RawDrop, RawObjectSource
+    HistoricalDropTablesData,
+    HistoricalItemsData,
+    HistoricalRecipesData,
+    ProcessedDropSource,
+    ProcessedItem,
+    ProcessedMaterial,
+    ProcessedRecipe,
+    RawDrop, RawObjectSource
 } from '../types/GameData';
 
 let processedItemsCache: Map<number, ProcessedItem> | null = null;
