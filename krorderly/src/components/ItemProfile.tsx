@@ -25,12 +25,14 @@ const SectionHeader = ({ title, isOpen, onToggle }: { title: string, isOpen: boo
 export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
   const { language } = useLocalization();
   const [recipes, setRecipes] = useState<ProcessedRecipe[]>([]);
+  const [byproductRecipes, setByproductRecipes] = useState<ProcessedRecipe[]>([]);
   const [dropSources, setDropSources] = useState<ProcessedDropSource[]>([]);
   const [itemMap, setItemMap] = useState<Map<number, ProcessedItem>>(new Map());
   const [categoryMap, setCategoryMap] = useState<Map<number, ProcessedItem[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setCreateOpen] = useState(true);
   const [isCollectOpen, setCollectOpen] = useState(true);
+  const [isByproductOpen, setByproductOpen] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -39,6 +41,7 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
       ]);
       setRecipes(allRecipes.filter(r => r.results.some(res => res.itemId === item.id)));
       setDropSources(allDropSources.filter(s => s.drops.some(d => d.itemId === item.id)));
+      setByproductRecipes(allRecipes.filter(r => r.byproducts?.some(g => g.drops.some(d => d.itemId === item.id))));
       setItemMap(allItems);
       setCategoryMap(allCategories);
       setIsLoading(false);
@@ -72,7 +75,7 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
           <p class="mt-2 text-xl font-bold">{name}</p>
           <p class="text-sm text-gray-400">{categoryName}</p>
         </div>
-        <div class="flex-grow pt-2"><p class="text-gray-300">{description}</p></div>
+        <div class="flex-grow pt-2"><p class="text-gray-300">{description}</p><p class="text-gray-500 text-xs">( ID: {item.id} )</p></div>
       </div>
       {isLoading ? (<p>Loading details...</p>) : (
         <div class="space-y-6">
@@ -85,6 +88,16 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
                 <div class="mt-3 space-y-4">
                   {groupedCultivationRecipes.otherRecipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}
                   {Array.from(groupedCultivationRecipes.groups.values()).map(group => <RecipeCard key={group[0].id} cultivationGroup={group} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}
+                </div>
+              )}
+            </div>
+          )}
+          {byproductRecipes.length > 0 && (
+            <div>
+              <SectionHeader title={t('byproductOf', language)} isOpen={isByproductOpen} onToggle={() => setByproductOpen(!isByproductOpen)} />
+              {isByproductOpen && (
+                <div class="mt-3 space-y-4">
+                  {byproductRecipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}
                 </div>
               )}
             </div>

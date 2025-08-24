@@ -6,6 +6,7 @@ const strings = {
     languageTitle: { EN: "Language", JA: "言語" },
     create: { EN: "Create", JA: "作成" },
     collect: { EN: "Collect", JA: "収集" },
+    byproductOf: { EN: "Byproduct", JA: "副産物" },
     additionalDetails: { EN: "Additional Details", JA: "追加情報" },
     weight: { EN: "Weight", JA: "重さ" },
     stackSize: { EN: "Stack Size", JA: "スタックサイズ" },
@@ -24,13 +25,14 @@ const strings = {
     tokenCost: { EN: "Token Cost", JA: "トークンコスト" },
     observationPointCost: { EN: "Observation Point Cost", JA: "観測ポイントコスト" },
     area: { EN: "Area", JA: "エリア" },
-    byproduct: { EN: "Byproduct", JA: "副産物" },
+    byproduct: { EN: "Byproducts", JA: "副産物" },
     simulationRoom: { EN: "Simulation Room", JA: "シミュレーションルーム" },
     allAreas: { EN: "All", JA: "すべて" },
     qualityScore: { EN: "Quality Score", JA: "品質スコア" },
     durabilityCost: { EN: "Durability Cost", JA: "耐久消費" },
     inclusionCost: { EN: "Inclusion Cost", JA: "内容物消費" },
     exp: { EN: "EXP", JA: "経験値" },
+    craftTime: { EN: "Craft Time", JA: "製作時間" },
 };
 
 export const t = (key: keyof typeof strings, lang: 'EN' | 'JA'): string => {

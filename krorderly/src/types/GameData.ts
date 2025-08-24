@@ -23,12 +23,20 @@ export interface ProcessedMaterial {
     count: number; durabilityCost: number; inclusionCost: number;
 }
 
+export interface ByproductDrop {
+    itemId: number; min: number; max: number; chance: number;
+}
+
+export interface ByproductGroup {
+    group: number; drops: ByproductDrop[];
+}
+
 export interface ProcessedRecipe {
     id: string; recipeTypeName: string; facility: { en: string, ja: string };
     materials: ProcessedMaterial[]; results: { itemId: number; count: string; }[];
     tokenCost?: number; observationPointCost?: number;
-    byproduct?: { itemId: number; min: number; max: number; };
-    area: string; qualityScore?: number; exp?: number;
+    byproducts?: ByproductGroup[];
+    area: string; qualityScore?: number; exp?: number; craftTime?: number;
 }
 
 export interface ProcessedDropSource {
@@ -60,6 +68,7 @@ export interface RawSmeltingRecipe {
     smeltingCraftRecipeId: number; materialItemId: number; materialAmount: number;
     resultItemId: number; resultAmount: number; craftTime: number;
     facilityName_EN: string; facilityName_JA: string;
+    byproductInfo?: { dropGroup: number; weight: number; itemId: number; dropMinAmount: number; dropMaxAmount: number; }[];
 }
 
 export interface RawCultivationRecipe {

@@ -1,5 +1,6 @@
 import { DATA_BASE_URL } from '../Config';
 import type {
+    ByproductGroup,
     HistoricalDropTablesData,
     HistoricalItemsData,
     HistoricalRecipesData,
@@ -66,6 +67,17 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
                 if (latest) {
                     const recipe = versions[latest];
                     let area = recipe.systemType === 'SandBox' ? 'Simulation Room' : (recipe.systemType || 'All');
+                    const processedByproducts: ByproductGroup[] | undefined = recipe.byproductDropId > 0
+                        ? [{
+                            group: 1,
+                            drops: [{
+                                itemId: recipe.byproductDropId,
+                                min: recipe.dropCountMin,
+                                max: recipe.dropCountMax,
+                                chance: 100
+                            }]
+                        }]
+                        : undefined;
                     processedList.push({
                         id: `crafting_${recipe.craftRecipeId}`, recipeTypeName: "Crafting",
                         facility: { en: recipe.facilityName_EN, ja: recipe.facilityName_JA },
@@ -79,7 +91,7 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
                         }),
                         results: [{ itemId: recipe.resultItemId, count: `${recipe.resultAmount}` }],
                         tokenCost: recipe.requiredToken, observationPointCost: recipe.observationPoint,
-                        byproduct: recipe.byproductDropId > 0 ? { itemId: recipe.byproductDropId, min: recipe.dropCountMin, max: recipe.dropCountMax } : undefined,
+                        byproducts: processedByproducts,
                         area: area, exp: recipe.exp,
                     });
                 }
@@ -92,32 +104,32 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
                 if (latest) {
                     const recipe = versions[latest];
                     const materialItem = itemMap.get(recipe.materialItemId);
+                    const byproductGroups = new Map<number, { totalWeight: number, drops: any[] }>();
+                    if (recipe.byproductInfo) {
+                        recipe.byproductInfo.forEach(drop => {
+                            if (!byproductGroups.has(drop.dropGroup)) byproductGroups.set(drop.dropGroup, { totalWeight: 0, drops: [] });
+                            const group = byproductGroups.get(drop.dropGroup)!;
+                            group.totalWeight += drop.weight;
+                            group.drops.push(drop);
+                        });
+                    }
+                    const processedByproducts: ByproductGroup[] = Array.from(byproductGroups.entries()).map(([groupNum, data]) => ({
+                        group: groupNum,
+                        drops: data.drops.map(d => ({
+                            itemId: d.itemId,
+                            min: d.dropMinAmount,
+                            max: d.dropMaxAmount,
+                            chance: (d.weight / data.totalWeight) * 100
+                        }))
+                    }));
                     processedList.push({
-                        id: `smelting_${recipe.smeltingCraftRecipeId}`, recipeTypeName: "Smelting",
+                        id: `smelting_${recipe.smeltingCraftRecipeId}`, recipeTypeName: "Processing",
                         facility: { en: recipe.facilityName_EN, ja: recipe.facilityName_JA },
                         materials: [{ isCategory: false, id: recipe.materialItemId, name: { en: materialItem ?.name.en || "Item", ja: materialItem ?.name.ja || "アイテム" }, count: recipe.materialAmount, inclusionCost: 0, durabilityCost: 0 }],
                         results: [{ itemId: recipe.resultItemId, count: `${recipe.resultAmount}` }],
                         area: "All",
-                    });
-                }
-            }
-        }
-        if (rawData.cultivation) {
-            for (const id in rawData.cultivation) {
-                const versions = rawData.cultivation[id];
-                const latest = Object.keys(versions).sort().pop();
-                if (latest) {
-                    const recipe = versions[latest];
-                    const seedItem = itemMap.get(recipe.seedItemId);
-                    recipe.resolved_drop_scores.forEach(score => {
-                        processedList.push({
-                            id: `cultivation_${recipe.id}_${score.qualityScore}`, recipeTypeName: "Cultivation",
-                            facility: { en: "Planter", ja: "プランター" },
-                            materials: [{ isCategory: false, id: recipe.seedItemId, name: { en: seedItem ?.name.en || "Seed", ja: seedItem ?.name.ja || "種" }, count: 1, inclusionCost: 0, durabilityCost: 0 }],
-                            results: score.resolved_lotteries.map(l => ({ itemId: l.dropItemId, count: `${l.minDropAmount}-${l.maxDropAmount}` })),
-                            qualityScore: score.qualityScore,
-                            area: "All",
-                        });
+                        craftTime: recipe.craftTime,
+                        byproducts: processedByproducts,
                     });
                 }
             }

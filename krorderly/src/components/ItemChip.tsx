@@ -12,6 +12,7 @@ interface ItemChipProps {
   onClick: (item: ProcessedItem) => void;
   categoryMap: Map<number, ProcessedItem[]>;
   forceItemDisplay?: boolean;
+  chance?: number;
 }
 
 const findStat = (item: ProcessedItem, statKey: string): number | undefined => {
@@ -23,11 +24,27 @@ const findStat = (item: ProcessedItem, statKey: string): number | undefined => {
     return undefined;
 };
 
-export function ItemChip({ item, material, count, label, onClick, categoryMap, forceItemDisplay = false }: ItemChipProps) {
+const formatChance = (chance: number) => {
+    return parseFloat(chance.toFixed(6));
+};
+
+export function ItemChip({ item, material, count, label, onClick, categoryMap, forceItemDisplay = false, chance }: ItemChipProps) {
   const { language } = useLocalization();
   const [isExpanded, setExpanded] = useState(false);
   const isCategory = !!material?.isCategory && !forceItemDisplay;
   const isClickable = !!item;
+  if (!item && !isCategory) {
+    return (
+      <div class="flex items-center gap-2 bg-gray-900 p-2 rounded-md justify-between">
+        <div class="text-sm flex-grow">
+          <p class="font-semibold text-gray-400">Nothing</p>
+        </div>
+        {chance !== undefined && (
+          <div class="text-lg font-bold text-cyan-400 pr-2">{formatChance(chance)}%</div>
+        )}
+      </div>
+    );
+  }
   let name: string, iconUrl: string;
   let categoryItems: ProcessedItem[] = [];
   if (isCategory) {
@@ -73,6 +90,9 @@ export function ItemChip({ item, material, count, label, onClick, categoryMap, f
           <p class="font-semibold">{name}</p>
           {renderCost()}
         </div>
+        {chance !== undefined && (
+          <div class="text-lg font-bold text-cyan-400 pr-2">{formatChance(chance)}%</div>
+        )}
         {isCategory && (
           <svg xmlns="http://www.w3.org/2000/svg" class={`h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -85,7 +105,7 @@ export function ItemChip({ item, material, count, label, onClick, categoryMap, f
             <ItemChip 
               key={subItem.id} 
               item={subItem} 
-              material={material} 
+              material={material}
               count={"1"}
               onClick={onClick}
               categoryMap={categoryMap}
