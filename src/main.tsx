@@ -1,5 +1,5 @@
 import 'preact/debug';
-import { render, h } from 'preact';
+import { render } from 'preact';
 import { App } from './App';
 import { LocalizationProvider } from './contexts/LocalizationContext';
 import './index.css';
