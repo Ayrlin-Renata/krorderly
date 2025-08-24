@@ -1,23 +1,21 @@
 import { useState, useMemo } from 'preact/hooks';
-import { useLocalization } from '../contexts/LocalizationContext';
-import { t } from '../utils/Localization';
 import type { ProcessedItem, ByproductGroup } from '../types/GameData';
 import { ItemChip } from './ItemChip';
 import { ICON_BASE_URL } from '../Config';
 
-interface ByproductDisplayProps {
-    byproducts: ByproductGroup[];
-    itemMap: Map<number, ProcessedItem>;
-    categoryMap: Map<number, ProcessedItem[]>;
-    onItemClick: (item: ProcessedItem) => void;
+interface DropDisplayProps {
+  dropGroups: ByproductGroup[];
+  itemMap: Map<number, ProcessedItem>;
+  categoryMap: Map<number, ProcessedItem[]>;
+  onItemClick: (item: ProcessedItem) => void;
+  label: string;
 }
 
-export function ByproductDisplay({ byproducts, itemMap, categoryMap, onItemClick }: ByproductDisplayProps) {
+export function DropDisplay({ dropGroups, itemMap, categoryMap, onItemClick, label }: DropDisplayProps) {
     const [isExpanded, setExpanded] = useState(false);
-    const { language } = useLocalization();
-    const uniqueByproductIcons = useMemo(() => {
+    const uniqueIcons = useMemo(() => {
         const icons = new Set<string>();
-        byproducts.forEach(group => {
+        dropGroups.forEach(group => {
             group.drops.forEach(drop => {
                 if (drop.itemId > 0) {
                     const item = itemMap.get(drop.itemId);
@@ -26,19 +24,19 @@ export function ByproductDisplay({ byproducts, itemMap, categoryMap, onItemClick
             });
         });
         return Array.from(icons);
-    }, [byproducts, itemMap]);
-    if (!byproducts || byproducts.length === 0) return null;
+    }, [dropGroups, itemMap]);
+    if (!dropGroups || dropGroups.length === 0) return null;
     return (
         <div class="pt-3 border-t border-gray-600">
             <div class="flex justify-between items-center" onClick={() => setExpanded(!isExpanded)}>
-                <div class="flex justify-between gap-3">
+                <div class="flex justify-between gap-2">
                     <div class="text-sm bg-gray-800 font-semibold px-3 py-1 rounded-md flex items-center gap-2">
-                        <span>{t('byproduct', language)}</span>
+                        <span>{label}</span>
                     </div>
                     {!isExpanded && (
-                        <div class="flex items-center mw-32 flex-wrap">
-                            {uniqueByproductIcons.map(icon => (
-                                <img key={icon} src={`${ICON_BASE_URL}${icon}.png`} class="w-8 h-8 -ml-4 border-2 border-gray-700 rounded-full bg-gray-800" />
+                        <div class="flex items-center min-w-32 flex-wrap">
+                            {uniqueIcons.map(icon => (
+                                <img key={icon} src={`${ICON_BASE_URL}${icon}.png`} class="w-8 h-8 -ml-3 border-2 border-gray-700 rounded-full bg-gray-800" />
                             ))}
                         </div>
                     )}
@@ -49,9 +47,9 @@ export function ByproductDisplay({ byproducts, itemMap, categoryMap, onItemClick
             </div>
             {isExpanded && (
                 <div class="mt-2 space-y-3">
-                    {byproducts.map(group => (
+                    {dropGroups.map(group => (
                         <div key={group.group} class="pl-2 border-l-2 border-gray-600 space-y-2">
-                            {group.drops.map((drop, i) => {
+                            {group.drops.sort((a, b) => {return b.chance - a.chance}).map((drop, i) => {
                                 const item = drop.itemId > 0 ? itemMap.get(drop.itemId) : undefined;
                                 const count = drop.min === drop.max ? `${drop.min}` : `${drop.min}-${drop.max}`;
                                 return (

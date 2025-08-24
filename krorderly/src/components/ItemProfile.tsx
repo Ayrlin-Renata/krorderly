@@ -40,7 +40,8 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
         getItems(), getAllRecipes(), getAllDropSources(), getItemsByCategory()
       ]);
       setRecipes(allRecipes.filter(r => r.results.some(res => res.itemId === item.id)));
-      setDropSources(allDropSources.filter(s => s.drops.some(d => d.itemId === item.id)));
+      
+      setDropSources(allDropSources.filter(s => s.dropRules.some(g => g.drops.some(d => d.drops.some(i => i.itemId === item.id)))));
       setByproductRecipes(allRecipes.filter(r => r.byproducts?.some(g => g.drops.some(d => d.itemId === item.id))));
       setItemMap(allItems);
       setCategoryMap(allCategories);

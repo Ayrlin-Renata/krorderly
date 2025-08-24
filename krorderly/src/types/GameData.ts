@@ -39,10 +39,23 @@ export interface ProcessedRecipe {
     area: string; qualityScore?: number; exp?: number; craftTime?: number;
 }
 
+export interface ProcessedDropRule {
+    minLevel: number;
+    maxLevel: number;
+    drops: ByproductGroup[];
+}
+
 export interface ProcessedDropSource {
     id: string; sourceTypeName: string; name: { en: string, ja: string };
-    drops: { itemId: number; min: number; max: number; chance: number; }[];
+    dropRules: ProcessedDropRule[];
     exp?: string;
+    toolId?: number;
+    canUseUnsuitable?: boolean;
+    completedDrops?: number;
+    observationPoints?: string;
+    creatureId?: number;
+    spawnInterval?: number;
+    harvests?: number;
 }
 
 export interface HistoricalRecipesData {
@@ -87,13 +100,20 @@ export interface HistoricalDropTablesData {
 }
 
 export interface RawDrop {
-    itemId: number; dropMinAmount: number; dropMaxAmount: number; weight: number;
+    itemId: number; dropMinAmount: number; dropMaxAmount: number; weight: number; dropGroup: number;
+}
+
+export interface RawDropRule {
+    creatureMinLevel: number;
+    creatureMaxLevel: number;
+    resolved_drops: RawDrop[];
 }
 
 export interface RawCreatureSource {
     creatureId: number; creatureName_EN: string; creatureName_JA: string;
-    drop_rules: { resolved_drops: RawDrop[]; }[];
+    drop_rules: RawDropRule[];
     minExperience: number; maxExperience: number;
+    minObservationPoint: number; maxObservationPoint: number;
 }
 
 export interface RawObjectSource {
@@ -101,4 +121,12 @@ export interface RawObjectSource {
     resolved_suitableDropId?: RawDrop[];
     resolved_drops?: RawDrop[];
     expertise: number;
+    suitableToolCategoryName?: string;
+    suitableRank?: number;
+    canUseUnsuitable?: number;
+    completedDropCount?: number;
+    observationPoint?: string;
+    nameForTool?: string;
+    spawnInterval?: number;
+    harvestableCountBeforeCompleting?: number;
 }

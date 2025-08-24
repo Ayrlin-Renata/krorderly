@@ -3,7 +3,7 @@ import { useLocalization } from '../contexts/LocalizationContext';
 import { t } from '../utils/Localization';
 import type { ProcessedItem, ProcessedRecipe } from '../types/GameData';
 import { ItemChip } from './ItemChip';
-import { ByproductDisplay } from './ByproductDisplay';
+import { DropDisplay } from './DropDisplay';
 
 interface RecipeCardProps {
     recipe?: ProcessedRecipe;
@@ -32,21 +32,15 @@ const RecipeDisplay = ({ recipe, itemMap, categoryMap, onItemClick }: Omit<Recip
                 <div class="text-2xl font-bold text-gray-400">→</div>
                 <div class="flex flex-col gap-2 w-2/5">{recipe.results.map((res, i) => <ItemChip key={`${res.itemId}-${i}`} item={itemMap.get(res.itemId)} count={res.count} onClick={onItemClick} categoryMap={categoryMap} />)}</div>
             </div>
-            <div class="pt-3 border-t border-gray-600 flex flex-wrap gap-4 items-center justify-between">
-                <div class="flex flex-wrap gap-4 items-center">
-                    {hasCosts && (
-                        <>
-                            {(recipe.tokenCost || 0) > 0 && <div class="text-sm bg-gray-900 p-2 rounded-md">{t('tokenCost', language)}: <span class="font-bold">{recipe.tokenCost}</span></div>}
-                            {(recipe.observationPointCost || 0) > 0 && <div class="text-sm bg-gray-900 p-2 rounded-md">{t('observationPointCost', language)}: <span class="font-bold">{recipe.observationPointCost}</span></div>}
-                        </>
-                    )}
+            {hasCosts && (
+                <div class="pt-3 border-t border-gray-600 flex flex-wrap gap-4 items-center justify-between">
+                    <div class="flex flex-wrap gap-4 items-center">
+                        {(recipe.tokenCost || 0) > 0 && <div class="text-sm bg-gray-900 p-2 rounded-md">{t('tokenCost', language)}: <span class="font-bold">{recipe.tokenCost}</span></div>}
+                        {(recipe.observationPointCost || 0) > 0 && <div class="text-sm bg-gray-900 p-2 rounded-md">{t('observationPointCost', language)}: <span class="font-bold">{recipe.observationPointCost}</span></div>}
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-4 items-center">
-                    {(recipe.craftTime || 0) > 0 && <div class="text-sm bg-gray-800 px-3 py-1 rounded-md">{t('craftTime', language)}: <span class="font-bold">{recipe.craftTime}s</span></div>}
-                    {(recipe.exp || 0) > 0 && <div class="text-sm bg-gray-800 px-3 py-1 rounded-md">{t('exp', language)}: <span class="font-bold">{recipe.exp}</span></div>}
-                </div>
-            </div>
-            {recipe.byproducts && <ByproductDisplay byproducts={recipe.byproducts} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />}
+            )}
+            {recipe.byproducts && <DropDisplay label={t('byproduct', useLocalization().language)} dropGroups={recipe.byproducts} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />}
         </div>
     );
 }

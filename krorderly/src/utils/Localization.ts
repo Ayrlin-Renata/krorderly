@@ -33,6 +33,15 @@ const strings = {
     inclusionCost: { EN: "Inclusion Cost", JA: "内容物消費" },
     exp: { EN: "EXP", JA: "経験値" },
     craftTime: { EN: "Craft Time", JA: "製作時間" },
+    toolRequirement: { EN: "Tool Required", JA: "必要ツール" },
+    completedDrops: { EN: "Completed Drops", JA: "完了時ドロップ数" },
+    observationPoints: { EN: "Observation Points", JA: "観測ポイント" },
+    toolCategory: { EN: "Tool Category", JA: "ツールカテゴリ" },
+    itemRank: { EN: "Rank", JA: "ランク" },
+    levelRange: { EN: "Level", JA: "レベル" },
+    spawnInterval: { EN: "Spawn Interval", JA: "リポップ時間" },
+    harvests: { EN: "Harvests", JA: "採取回数" },
+    harvestableDrops: { EN: "Harvestable Drops", JA: "採取ドロップ" },
 };
 
 export const t = (key: keyof typeof strings, lang: 'EN' | 'JA'): string => {

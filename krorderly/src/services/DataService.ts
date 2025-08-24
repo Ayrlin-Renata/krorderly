@@ -140,14 +140,28 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
 };
 
 let dropSourcesCache: ProcessedDropSource[] | null = null;
-const calculateChance = (drop: RawDrop, allDropsInGroup: RawDrop[]): number => {
-    const totalWeight = allDropsInGroup.reduce((sum, d) => sum + d.weight, 0);
-    if (totalWeight === 0) return 0;
-    return (drop.weight / totalWeight) * 100;
+const processDropList = (dropList: RawDrop[]): ByproductGroup[] => {
+    const groups = new Map<number, { totalWeight: number, drops: RawDrop[] }>();
+    dropList.forEach(drop => {
+        if (!groups.has(drop.dropGroup)) groups.set(drop.dropGroup, { totalWeight: 0, drops: [] });
+        const group = groups.get(drop.dropGroup)!;
+        group.totalWeight += drop.weight;
+        group.drops.push(drop);
+    });
+    return Array.from(groups.entries()).map(([groupNum, data]) => ({
+        group: groupNum,
+        drops: data.drops.map(d => ({
+            itemId: d.itemId,
+            min: d.dropMinAmount,
+            max: d.dropMaxAmount,
+            chance: (d.weight / data.totalWeight) * 100
+        }))
+    }));
 };
 
 export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
     if (dropSourcesCache) return dropSourcesCache;
+    const itemMap = await getItems();
     try {
         const response = await fetch(`${DATA_BASE_URL}historical_droptables.json`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -159,21 +173,18 @@ export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
                 const latest = Object.keys(versions).sort().pop();
                 if (latest) {
                     const source = versions[latest];
-                    const allDrops: ProcessedDropSource['drops'] = [];
-                    source.drop_rules.forEach(rule => {
-                        rule.resolved_drops.forEach(drop => {
-                            if (drop.itemId === 0) return;
-                            allDrops.push({
-                                itemId: drop.itemId, min: drop.dropMinAmount, max: drop.dropMaxAmount,
-                                chance: calculateChance(drop, rule.resolved_drops),
-                            });
-                        });
-                    });
                     processedList.push({
-                        id: `creature_${source.creatureId}`, sourceTypeName: "Creature",
+                        id: `creature_${source.creatureId}`,
+                        sourceTypeName: "Creature",
                         name: { en: source.creatureName_EN, ja: source.creatureName_JA },
-                        drops: allDrops,
+                        dropRules: source.drop_rules.map(rule => ({
+                            minLevel: rule.creatureMinLevel,
+                            maxLevel: rule.creatureMaxLevel,
+                            drops: processDropList(rule.resolved_drops),
+                        })),
+                        observationPoints: source.minObservationPoint === source.maxObservationPoint ? `${source.minObservationPoint}` : `${source.minObservationPoint}-${source.maxObservationPoint}`,
                         exp: source.minExperience === source.maxExperience ? `${source.minExperience}` : `${source.minExperience}-${source.maxExperience}`,
+                        creatureId: source.creatureId,
                     });
                 }
             }
@@ -186,16 +197,33 @@ export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
                 if (latest) {
                     const source = versions[latest];
                     const dropList = source.resolved_suitableDropId || source.resolved_drops || [];
+                    let foundToolId: number | undefined;
+                    if (source.suitableToolCategoryName && source.suitableRank) {
+                        for (const item of itemMap.values()) {
+                            const toolData = item.extraData.find(d => d.source_file.includes('master_tool')) ?.data;
+                            if (toolData && toolData.toolCategoryId === source.suitableToolCategoryName && toolData.itemRank === source.suitableRank) {
+                                foundToolId = item.id;
+                                break;
+                            }
+                        }
+                    }
                     if (dropList.length > 0) {
                         processedList.push({
                             id: `${typeName.toLowerCase().replace(' ', '_')}_${source.objectId}`,
                             sourceTypeName: typeName,
-                            name: { en: source.objectName_EN, ja: source.objectName_JA },
-                            drops: dropList.filter((d: RawDrop) => d.itemId !== 0).map((d: RawDrop) => ({
-                                itemId: d.itemId, min: d.dropMinAmount, max: d.dropMaxAmount,
-                                chance: calculateChance(d, dropList),
-                            })),
+                            name: { en: source.objectName_EN || source.nameForTool || "?", ja: source.objectName_JA || source.nameForTool || "?" },
+                            dropRules: [{
+                                minLevel: 1,
+                                maxLevel: 100,
+                                drops: processDropList(dropList)
+                            }],
                             exp: `${source.expertise}`,
+                            toolId: foundToolId,
+                            canUseUnsuitable: source.canUseUnsuitable === 1,
+                            completedDrops: source.completedDropCount,
+                            observationPoints: source.observationPoint,
+                            spawnInterval: source.spawnInterval,
+                            harvests: source.harvestableCountBeforeCompleting,
                         });
                     }
                 }

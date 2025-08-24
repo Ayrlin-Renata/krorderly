@@ -35,7 +35,7 @@ export function ItemChip({ item, material, count, label, onClick, categoryMap, f
   const isClickable = !!item;
   if (!item && !isCategory) {
     return (
-      <div class="flex items-center gap-2 bg-gray-900 p-2 rounded-md justify-between">
+      <div class="flex items-center gap-2 bg-gray-900 p-2 rounded-md justify-between h-14">
         <div class="text-sm flex-grow">
           <p class="font-semibold text-gray-400">Nothing</p>
         </div>
