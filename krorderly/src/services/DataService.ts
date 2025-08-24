@@ -71,20 +71,16 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
                         facility: { en: recipe.facilityName_EN, ja: recipe.facilityName_JA },
                         materials: recipe.materials.map((m): ProcessedMaterial => {
                             const baseMaterial = {
-                                count: m.amount,
-                                durabilityCost: m.reduceDurability,
-                                inclusionCost: m.reduceInclusion,
+                                count: m.amount, durabilityCost: m.reduceDurability, inclusionCost: m.reduceInclusion,
                             };
-                            if (m.itemId === 0 && m.itemCategory > 0) {
-                                return { ...baseMaterial, isCategory: true, id: m.itemCategory, name: { en: m.itemCategoryName_EN || "Category", ja: m.itemCategoryName_JA || "カテゴリ" } };
-                            }
+                            if (m.itemId === 0 && m.itemCategory > 0) return { ...baseMaterial, isCategory: true, id: m.itemCategory, name: { en: m.itemCategoryName_EN || "Category", ja: m.itemCategoryName_JA || "カテゴリ" } };
                             const item = itemMap.get(m.itemId);
                             return { ...baseMaterial, isCategory: false, id: m.itemId, name: { en: item ?.name.en || "Item", ja: item ?.name.ja || "アイテム" } };
                         }),
                         results: [{ itemId: recipe.resultItemId, count: `${recipe.resultAmount}` }],
                         tokenCost: recipe.requiredToken, observationPointCost: recipe.observationPoint,
                         byproduct: recipe.byproductDropId > 0 ? { itemId: recipe.byproductDropId, min: recipe.dropCountMin, max: recipe.dropCountMax } : undefined,
-                        area: area,
+                        area: area, exp: recipe.exp,
                     });
                 }
             }
@@ -156,26 +152,21 @@ export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
                         rule.resolved_drops.forEach(drop => {
                             if (drop.itemId === 0) return;
                             allDrops.push({
-                                itemId: drop.itemId,
-                                min: drop.dropMinAmount,
-                                max: drop.dropMaxAmount,
+                                itemId: drop.itemId, min: drop.dropMinAmount, max: drop.dropMaxAmount,
                                 chance: calculateChance(drop, rule.resolved_drops),
                             });
                         });
                     });
                     processedList.push({
-                        id: `creature_${source.creatureId}`,
-                        sourceTypeName: "Creature",
+                        id: `creature_${source.creatureId}`, sourceTypeName: "Creature",
                         name: { en: source.creatureName_EN, ja: source.creatureName_JA },
                         drops: allDrops,
+                        exp: source.minExperience === source.maxExperience ? `${source.minExperience}` : `${source.minExperience}-${source.maxExperience}`,
                     });
                 }
             }
         }
-        const processObjectSource = (
-            sourceData: { [id: string]: { [v: string]: RawObjectSource } } | undefined,
-            typeName: string
-        ) => {
+        const processObjectSource = (sourceData: { [id: string]: { [v: string]: RawObjectSource } } | undefined, typeName: string) => {
             if (!sourceData) return;
             for (const id in sourceData) {
                 const versions = sourceData[id];
@@ -189,11 +180,10 @@ export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
                             sourceTypeName: typeName,
                             name: { en: source.objectName_EN, ja: source.objectName_JA },
                             drops: dropList.filter((d: RawDrop) => d.itemId !== 0).map((d: RawDrop) => ({
-                                itemId: d.itemId,
-                                min: d.dropMinAmount,
-                                max: d.dropMaxAmount,
+                                itemId: d.itemId, min: d.dropMinAmount, max: d.dropMaxAmount,
                                 chance: calculateChance(d, dropList),
                             })),
+                            exp: `${source.expertise}`,
                         });
                     }
                 }
@@ -203,10 +193,6 @@ export const getAllDropSources = async (): Promise<ProcessedDropSource[]> => {
         processObjectSource(rawData.harvestable_objects, 'Harvestable');
         processObjectSource(rawData.nest_objects, 'Nest');
         dropSourcesCache = processedList;
-        console.log(`Processed ${processedList.length} drop sources.`);
         return processedList;
-    } catch (error) {
-        console.error("Failed to process drop data:", error);
-        return [];
-    }
+    } catch (error) { console.error("Failed to process drop data:", error); return []; }
 };

@@ -20,9 +20,7 @@ export interface ProcessedItem {
 
 export interface ProcessedMaterial {
     isCategory: boolean; id: number; name: { en: string; ja: string; };
-    count: number;
-    durabilityCost: number;
-    inclusionCost: number;
+    count: number; durabilityCost: number; inclusionCost: number;
 }
 
 export interface ProcessedRecipe {
@@ -30,12 +28,13 @@ export interface ProcessedRecipe {
     materials: ProcessedMaterial[]; results: { itemId: number; count: string; }[];
     tokenCost?: number; observationPointCost?: number;
     byproduct?: { itemId: number; min: number; max: number; };
-    area: string; qualityScore?: number;
+    area: string; qualityScore?: number; exp?: number;
 }
 
 export interface ProcessedDropSource {
     id: string; sourceTypeName: string; name: { en: string, ja: string };
     drops: { itemId: number; min: number; max: number; chance: number; }[];
+    exp?: string;
 }
 
 export interface HistoricalRecipesData {
@@ -47,15 +46,14 @@ export interface HistoricalRecipesData {
 export interface RawCraftingMaterial {
     itemId: number; amount: number; itemCategory: number;
     itemCategoryName_EN?: string; itemCategoryName_JA?: string;
-    reduceDurability: number;
-    reduceInclusion: number;
+    reduceDurability: number; reduceInclusion: number;
 }
 
 export interface RawCraftingRecipe {
     craftRecipeId: number; resultItemId: number; resultAmount: number;
     facilityName_EN: string; facilityName_JA: string; materials: RawCraftingMaterial[];
     requiredToken: number; observationPoint: number; byproductDropId: number;
-    dropCountMin: number; dropCountMax: number; systemType: string;
+    dropCountMin: number; dropCountMax: number; systemType: string; exp: number;
 }
 
 export interface RawSmeltingRecipe {
@@ -86,10 +84,12 @@ export interface RawDrop {
 export interface RawCreatureSource {
     creatureId: number; creatureName_EN: string; creatureName_JA: string;
     drop_rules: { resolved_drops: RawDrop[]; }[];
+    minExperience: number; maxExperience: number;
 }
 
 export interface RawObjectSource {
     objectId: number; objectName_EN: string; objectName_JA: string;
     resolved_suitableDropId?: RawDrop[];
     resolved_drops?: RawDrop[];
+    expertise: number;
 }

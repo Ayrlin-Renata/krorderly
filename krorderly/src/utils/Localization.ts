@@ -4,8 +4,8 @@ const strings = {
     itemLookupTitle: { EN: "Item Lookup", JA: "アイテム検索" },
     listHelperTitle: { EN: "List Helper", JA: "リストヘルパー" },
     languageTitle: { EN: "Language", JA: "言語" },
-    obtainedViaCrafting: { EN: "Obtained Via Crafting", JA: "クラフトで入手" },
-    obtainedFromSources: { EN: "Obtained From Sources", JA: "ドロップで入手" },
+    create: { EN: "Create", JA: "作成" },
+    collect: { EN: "Collect", JA: "収集" },
     additionalDetails: { EN: "Additional Details", JA: "追加情報" },
     weight: { EN: "Weight", JA: "重さ" },
     stackSize: { EN: "Stack Size", JA: "スタックサイズ" },
@@ -30,6 +30,7 @@ const strings = {
     qualityScore: { EN: "Quality Score", JA: "品質スコア" },
     durabilityCost: { EN: "Durability Cost", JA: "耐久消費" },
     inclusionCost: { EN: "Inclusion Cost", JA: "内容物消費" },
+    exp: { EN: "EXP", JA: "経験値" },
 };
 
 export const t = (key: keyof typeof strings, lang: 'EN' | 'JA'): string => {

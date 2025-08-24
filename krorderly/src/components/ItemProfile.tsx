@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'preact/hooks';
+import { useState, useEffect, useMemo } from 'preact/hooks';
 import type { ProcessedItem, ProcessedRecipe, ProcessedDropSource } from '../types/GameData';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { t } from '../utils/Localization';
@@ -14,6 +14,14 @@ interface ItemProfileProps {
   onItemClick: (item: ProcessedItem) => void;
 }
 
+const SectionHeader = ({ title, isOpen, onToggle }: { title: string, isOpen: boolean, onToggle: () => void }) => (
+  <button onClick={onToggle} class="w-full flex justify-between items-center text-left">
+    <h3 class="text-xl font-bold text-white">{title}</h3>
+    <svg xmlns="http://www.w3.org/2000/svg" class={`h-6 w-6 transition-transform ${isOpen ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor">
+      <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+    </svg>
+  </button>
+);
 export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
   const { language } = useLocalization();
   const [recipes, setRecipes] = useState<ProcessedRecipe[]>([]);
@@ -21,6 +29,8 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
   const [itemMap, setItemMap] = useState<Map<number, ProcessedItem>>(new Map());
   const [categoryMap, setCategoryMap] = useState<Map<number, ProcessedItem[]>>(new Map());
   const [isLoading, setIsLoading] = useState(true);
+  const [isCreateOpen, setCreateOpen] = useState(true);
+  const [isCollectOpen, setCollectOpen] = useState(true);
   useEffect(() => {
     const fetchData = async () => {
       setIsLoading(true);
@@ -35,6 +45,20 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
     };
     fetchData();
   }, [item.id]);
+  const groupedCultivationRecipes = useMemo(() => {
+    const groups = new Map<number, ProcessedRecipe[]>();
+    const otherRecipes: ProcessedRecipe[] = [];
+    recipes.forEach(recipe => {
+      if (recipe.recipeTypeName === 'Cultivation' && recipe.materials[0]) {
+        const seedId = recipe.materials[0].id;
+        if (!groups.has(seedId)) groups.set(seedId, []);
+        groups.get(seedId)!.push(recipe);
+      } else {
+        otherRecipes.push(recipe);
+      }
+    });
+    return { groups, otherRecipes };
+  }, [recipes]);
   const name = language === 'JA' ? item.name.ja : item.name.en;
   const description = language === 'JA' ? item.description.ja : item.description.en;
   const categoryName = language === 'JA' ? item.category.ja : item.category.en;
@@ -53,16 +77,24 @@ export function ItemProfile({ item, onClose, onItemClick }: ItemProfileProps) {
       {isLoading ? (<p>Loading details...</p>) : (
         <div class="space-y-6">
           {item.extraData.length > 0 && <ExtraDataDisplay extraData={item.extraData} />}
+          
           {recipes.length > 0 && (
             <div>
-              <h3 class="text-lg font-semibold mb-3 text-cyan-300">{t('obtainedViaCrafting', language)}</h3>
-              <div class="space-y-4">{recipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}</div>
+              <SectionHeader title={t('create', language)} isOpen={isCreateOpen} onToggle={() => setCreateOpen(!isCreateOpen)} />
+              {isCreateOpen && (
+                <div class="mt-3 space-y-4">
+                  {groupedCultivationRecipes.otherRecipes.map(recipe => <RecipeCard key={recipe.id} recipe={recipe} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}
+                  {Array.from(groupedCultivationRecipes.groups.values()).map(group => <RecipeCard key={group[0].id} cultivationGroup={group} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}
+                </div>
+              )}
             </div>
           )}
           {dropSources.length > 0 && (
             <div>
-              <h3 class="text-lg font-semibold mb-3 text-cyan-300">{t('obtainedFromSources', language)}</h3>
-              <div class="space-y-4">{dropSources.map(source => <DropSourceCard key={source.id} source={source} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}</div>
+              <SectionHeader title={t('collect', language)} isOpen={isCollectOpen} onToggle={() => setCollectOpen(!isCollectOpen)} />
+              {isCollectOpen && (
+                <div class="mt-3 space-y-4">{dropSources.map(source => <DropSourceCard key={source.id} source={source} itemMap={itemMap} categoryMap={categoryMap} onItemClick={onItemClick} />)}</div>
+              )}
             </div>
           )}
         </div>

@@ -57,7 +57,10 @@ export function ItemLookupView() {
     }
     return [...startsWithMatches, ...includesMatches].slice(0, 30);
   }, [items, searchQuery, language]);
-  const handleItemSelect = (item: ProcessedItem) => {
+  const handleCardSelect = (item: ProcessedItem) => {
+    setSelectedItem(item);
+  };
+  const handleChipSelect = (item: ProcessedItem) => {
     setSelectedItem(item);
     const name = language === 'JA' ? item.name.ja : item.name.en;
     setSearchQuery(name);
@@ -77,7 +80,6 @@ export function ItemLookupView() {
     if (selectedItem) {
       setSelectedItem(null);
     }
-    
     searchInputRef.current?.focus();
   };
   return (
@@ -98,7 +100,7 @@ export function ItemLookupView() {
           
           {selectedItem && (
              <div class="mt-6">
-                <ItemProfile item={selectedItem} onClose={handleProfileClose} onItemClick={handleItemSelect} />
+                <ItemProfile item={selectedItem} onClose={handleProfileClose} onItemClick={handleChipSelect} />
              </div>
           )}
           {!selectedItem && (
@@ -112,7 +114,7 @@ export function ItemLookupView() {
                     key={item.id}
                     item={item}
                     language={language}
-                    onClick={() => handleItemSelect(item)}
+                    onClick={() => handleCardSelect(item)}
                   />
                 ))}
               </div>

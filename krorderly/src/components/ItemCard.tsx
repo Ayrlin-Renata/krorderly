@@ -1,5 +1,6 @@
 import type { ProcessedItem } from '../types/GameData';
 import { ICON_BASE_URL } from '../Config';
+import type { JSX } from 'preact';
 
 interface ItemCardProps {
   item: ProcessedItem;
@@ -11,10 +12,17 @@ export function ItemCard({ item, language, onClick }: ItemCardProps) {
   const iconUrl = `${ICON_BASE_URL}${item.icon}.png`;
   const name = language === 'JA' ? item.name.ja : item.name.en;
   const category = language === 'JA' ? item.category.ja : item.category.en;
+  const handleKeyPress = (e: JSX.TargetedKeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      onClick();
+    }
+  };
   return (
     <div 
       onClick={onClick}
-      class="bg-gray-800 p-3 rounded-lg shadow-md text-center cursor-pointer hover:bg-gray-700 transition-colors flex flex-col items-center justify-between h-full"
+      onKeyPress={handleKeyPress}
+      tabIndex={0}
+      class="bg-gray-800 p-3 rounded-lg shadow-md text-center cursor-pointer hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-colors flex flex-col items-center justify-between h-full"
     >
       <img 
         src={iconUrl} 
