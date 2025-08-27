@@ -42,6 +42,9 @@ const strings = {
     spawnInterval: { EN: "Spawn Interval", JA: "リポップ時間" },
     harvests: { EN: "Harvests", JA: "採取回数" },
     harvestableDrops: { EN: "Harvestable Drops", JA: "採取ドロップ" },
+    mood: { EN: "Mood", JA: "ムード" },
+    moodValue: { EN: "Mood Value", JA: "ムード値" },
+    moodItemLimit: { EN: "Mood Item Limit", JA: "ムードアイテム上限" },
 };
 
 export const t = (key: keyof typeof strings, lang: 'EN' | 'JA'): string => {

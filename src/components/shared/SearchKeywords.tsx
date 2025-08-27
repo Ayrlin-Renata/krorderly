@@ -4,7 +4,7 @@ interface SearchKeywordsProps {
     onKeywordClick: (keyword: string) => void;
 }
 
-const keywords = ['category:'];
+const keywords = ['category:', 'id:', 'mood:'];
 export function SearchKeywords({ onKeywordClick }: SearchKeywordsProps) {
     const [isDropdownOpen, setDropdownOpen] = useState(false);
     const handleKeywordSelect = (keyword: string) => {
