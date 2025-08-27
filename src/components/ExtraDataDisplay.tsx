@@ -1,12 +1,20 @@
+import { h } from 'preact';
 import type { ExtraData } from '../types/GameData';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { t } from '../utils/Localization';
+import { ICON_ICON_URL } from '../Config';
 
 interface ExtraDataDisplayProps {
     extraData: ExtraData[];
 }
 
-function Stat({ labelKey, value }: { labelKey: string, value: any }) {
+interface StatProps {
+    labelKey: string;
+    value?: string | number | null;
+    children?: h.JSX.Element;
+}
+
+function Stat({ labelKey, value, children }: StatProps) {
     const { language } = useLocalization();
     if (value === null || value === undefined || value === 0) {
         return null;
@@ -14,7 +22,8 @@ function Stat({ labelKey, value }: { labelKey: string, value: any }) {
     return (
         <div class="flex justify-between text-sm">
             <span class="text-gray-400">{t(labelKey as any, language)}</span>
-            <span class="font-semibold">{value}</span>
+            {value && <span class="font-semibold">{value}</span>}
+            {children}
         </div>
     );
 }
@@ -24,6 +33,7 @@ interface CombinedData {
 }
 
 export function ExtraDataDisplay({ extraData }: ExtraDataDisplayProps) {
+    const { language } = useLocalization();
     const allData = extraData.reduce<CombinedData>((acc, current) => {
         return { ...acc, ...current.data };
     }, {});
@@ -36,6 +46,27 @@ export function ExtraDataDisplay({ extraData }: ExtraDataDisplayProps) {
         </>
     );
     const specificStats = sourceFiles.map(sourceFile => {
+        if (sourceFile.includes('master_housing_piece')) {
+            const moodType = allData.resolved_moodType;
+            var moodIconFilename = moodType.iconAddress;
+            if (moodIconFilename.startsWith('SandBox_')) {
+                moodIconFilename = moodIconFilename.charAt(8).toLowerCase() + moodIconFilename.slice('SandBox_'.length + 1);
+            }
+            return (
+                <>
+                    {moodType && (
+                        <Stat labelKey="mood" value="">
+                            <div class="flex items-center gap-2">
+                                <img src={`${ICON_ICON_URL}${moodIconFilename}.png`} class="w-5 h-5" />
+                                <span class="font-semibold">{language === 'JA' ? moodType.name_JA : moodType.name_EN}</span>
+                            </div>
+                        </Stat>
+                    )}
+                    <Stat labelKey="moodValue" value={allData.mood} />
+                    <Stat labelKey="moodItemLimit" value={allData.moodLimitCount} />
+                </>
+            )
+        }
         if (sourceFile.includes('master_food')) {
             return (
                 <>
