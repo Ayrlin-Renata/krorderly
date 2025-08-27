@@ -1,3 +1,4 @@
+import { h } from 'preact';
 import { useEffect, useState, useMemo, useRef } from 'preact/hooks';
 import { getItems } from '../services/DataService';
 import type { ProcessedItem } from '../types/GameData';
@@ -28,34 +29,47 @@ export function ItemLookupView() {
     if (!searchQuery) return [];
     const itemsArray = Array.from(items.values());
     const lowerCaseQuery = searchQuery.toLowerCase().trim();
-    if (lowerCaseQuery.includes(':')) {
-      const [keyword, ...valueParts] = lowerCaseQuery.split(':');
-      const value = valueParts.join(':').trim();
-      if (!value) return [];
-      switch (keyword) {
-        case 'category':
-          return itemsArray.filter(item => {
-            const category = language === 'JA' ? item.category.ja : item.category.en;
-            return typeof category === 'string' && category.toLowerCase().includes(value);
-          }).slice(0, 30);
-        default:
-          return [];
+    
+    const keywordRegex = /(category|id):(?:"([^"]+)"|(\S+))/g;
+    const keywordFilters: { [key: string]: string } = {};
+    let nameQuery = lowerCaseQuery;
+    let match;
+    while ((match = keywordRegex.exec(lowerCaseQuery)) !== null) {
+      const value = match[2] || match[3];
+      if (value) {
+        keywordFilters[match[1]] = value;
       }
+      nameQuery = nameQuery.replace(match[0], '').trim();
     }
-    const startsWithMatches: ProcessedItem[] = [];
-    const includesMatches: ProcessedItem[] = [];
-    for (const item of itemsArray) {
-      const name = language === 'JA' ? item.name.ja : item.name.en;
-      if (typeof name === 'string') {
-        const lowerCaseName = name.toLowerCase();
-        if (lowerCaseName.startsWith(lowerCaseQuery)) {
-          startsWithMatches.push(item);
-        } else if (lowerCaseName.includes(lowerCaseQuery)) {
-          includesMatches.push(item);
+    let results = itemsArray;
+    if (keywordFilters.category) {
+      const filterValue = keywordFilters.category.replace(/_/g, ' ');
+      results = results.filter(item => {
+        const category = language === 'JA' ? item.category.ja : item.category.en;
+        return typeof category === 'string' && category.toLowerCase().includes(filterValue);
+      });
+    }
+    if (keywordFilters.id) {
+      results = results.filter(item => item.id.toString().includes(keywordFilters.id));
+    }
+    if (nameQuery) {
+      const startsWithMatches: ProcessedItem[] = [];
+      const includesMatches: ProcessedItem[] = [];
+      for (const item of results) {
+        const name = language === 'JA' ? item.name.ja : item.name.en;
+        if (typeof name === 'string') {
+          const lowerCaseName = name.toLowerCase();
+          if (lowerCaseName.startsWith(nameQuery)) {
+            startsWithMatches.push(item);
+          } else if (lowerCaseName.includes(nameQuery)) {
+            includesMatches.push(item);
+          }
         }
       }
+      results = [...startsWithMatches, ...includesMatches];
     }
-    return [...startsWithMatches, ...includesMatches].slice(0, 30);
+    
+    return results.slice(0, 30);
   }, [items, searchQuery, language]);
   const handleCardSelect = (item: ProcessedItem) => {
     setSelectedItem(item);
@@ -76,7 +90,7 @@ export function ItemLookupView() {
     }
   };
   const handleKeywordClick = (keyword: string) => {
-    setSearchQuery(keyword);
+    setSearchQuery(prev => `${prev} ${keyword}`.trim());
     if (selectedItem) {
       setSelectedItem(null);
     }
