@@ -134,6 +134,26 @@ export const getAllRecipes = async (): Promise<ProcessedRecipe[]> => {
                 }
             }
         }
+        if (rawData.cultivation) {
+            for (const id in rawData.cultivation) {
+                const versions = rawData.cultivation[id];
+                const latest = Object.keys(versions).sort().pop();
+                if (latest) {
+                    const recipe = versions[latest];
+                    const seedItem = itemMap.get(recipe.seedItemId);
+                    recipe.resolved_drop_scores.forEach(score => {
+                        processedList.push({
+                            id: `cultivation_${recipe.id}_${score.qualityScore}`, recipeTypeName: "Cultivation",
+                            facility: { en: "Planter", ja: "プランター" },
+                            materials: [{ isCategory: false, id: recipe.seedItemId, name: { en: seedItem ?.name.en || "Seed", ja: seedItem ?.name.ja || "種" }, count: 1, inclusionCost: 0, durabilityCost: 0 }],
+                            results: score.resolved_lotteries.map(l => ({ itemId: l.dropItemId, count: `${l.minDropAmount}-${l.maxDropAmount}` })),
+                            qualityScore: score.qualityScore,
+                            area: "All",
+                        });
+                    });
+                }
+            }
+        }
         recipesCache = processedList;
         return processedList;
     } catch (error) { console.error("Failed to process recipe data:", error); return []; }
