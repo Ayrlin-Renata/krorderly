@@ -2,6 +2,9 @@
 Companion application for Holoearth.
 This is a fan project intended for the education and convienience of Holoearth players. 
 
+## dev preview
+[krorderly.ayrl.in](https://krorderly.ayrl.in)
+
 ## item lookup
 Collates item data from the [Holoearth Wiki](holoearth.wiki.gg) for easy search and reference.
 
