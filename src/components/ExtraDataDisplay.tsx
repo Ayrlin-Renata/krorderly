@@ -2,7 +2,7 @@ import { h } from 'preact';
 import type { ExtraData } from '../types/GameData';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { t } from '../utils/Localization';
-import { ICON_ICON_URL } from '../Config';
+import { ICON_ICON_URL, ICON_PLACEHOLDER_URL } from '../Config';
 
 interface ExtraDataDisplayProps {
     extraData: ExtraData[];
@@ -48,7 +48,7 @@ export function ExtraDataDisplay({ extraData }: ExtraDataDisplayProps) {
     const specificStats = sourceFiles.map(sourceFile => {
         if (sourceFile.includes('master_housing_piece')) {
             const moodType = allData.resolved_moodType;
-            var moodIconFilename = moodType.iconAddress;
+            var moodIconFilename = moodType ? moodType.iconAddress : ICON_PLACEHOLDER_URL;
             if (moodIconFilename.startsWith('SandBox_')) {
                 moodIconFilename = moodIconFilename.charAt(8).toLowerCase() + moodIconFilename.slice('SandBox_'.length + 1);
             }

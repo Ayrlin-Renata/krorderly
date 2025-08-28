@@ -2,7 +2,7 @@ import { useState } from 'preact/hooks';
 import type { ProcessedItem, ProcessedMaterial } from '../types/GameData';
 import { useLocalization } from '../contexts/LocalizationContext';
 import { t } from '../utils/Localization';
-import { ICON_BASE_URL } from '../Config';
+import { ICON_BASE_URL, ICON_PLACEHOLDER_URL } from '../Config';
 
 interface ItemChipProps {
   item?: ProcessedItem;
@@ -50,10 +50,10 @@ export function ItemChip({ item, material, count, label, onClick, categoryMap, f
   if (isCategory) {
     name = language === 'JA' ? material!.name.ja : material!.name.en;
     categoryItems = categoryMap.get(material!.id) || [];
-    iconUrl = categoryItems.length > 0 ? `${ICON_BASE_URL}${categoryItems[0].icon}.png` : 'https://placehold.co/40x40/4a5568/ffffff?text=?';
+    iconUrl = categoryItems.length > 0 ? `${ICON_BASE_URL}${categoryItems[0].icon}.png` : ICON_PLACEHOLDER_URL;
   } else {
     name = item ? (language === 'JA' ? item.name.ja : item.name.en) : 'Unknown';
-    iconUrl = item ? `${ICON_BASE_URL}${item.icon}.png` : 'https://placehold.co/40x40/4a5568/ffffff?text=?';
+    iconUrl = item ? `${ICON_BASE_URL}${item.icon}.png` : ICON_PLACEHOLDER_URL;
   }
   const handleClick = () => {
     if (isCategory) setExpanded(!isExpanded);
